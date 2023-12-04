@@ -9,13 +9,9 @@ import { useAppSelector } from "../../../hooks/useAppSelector";
 import {
   deleteGroup,
   getUserGroups,
-  selectDeleteGroupData,
-  selectDeleteGroupError,
   selectDeleteGroupStatus,
 } from "../../../store/groupSlice";
 import { ResponseStatus } from "../../../store/types";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
 import Clip from "../../../@core/components/clip-spinner";
 
 interface Props {
@@ -26,23 +22,13 @@ interface Props {
 const DeleteGroup = ({ open, handleDialog, groupId }: Props) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectDeleteGroupStatus);
-  const error = useAppSelector(selectDeleteGroupError);
-  const data = useAppSelector(selectDeleteGroupData);
-
-  console.log("groupid", groupId);
-  useEffect(() => {
-    if (status === ResponseStatus.SUCCEEDED) {
-      handleDialog();
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      toast.error(error);
-    }
-  }, [status, error, data, handleDialog]);
 
   const handleDelete = () => {
-    console.log("group", groupId);
     handleDialog();
-    dispatch(deleteGroup({ groupId })).then(() => dispatch(getUserGroups()));
+    dispatch(deleteGroup({ groupId })).then(() => {
+      handleDialog();
+      dispatch(getUserGroups());
+    });
   };
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>

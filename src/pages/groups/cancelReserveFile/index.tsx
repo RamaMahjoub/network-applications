@@ -9,14 +9,10 @@ import { useAppSelector } from "../../../hooks/useAppSelector";
 import {
   getUnBookedFiles,
   getGroupFiles,
-  selectUnBookFileData,
-  selectUnBookFileError,
   selectUnBookFileStatus,
   unBookFile,
 } from "../../../store/groupFileSlice";
-import { useEffect } from "react";
 import { ResponseStatus } from "../../../store/types";
-import { toast } from "react-toastify";
 import { IUnBookFileRequest } from "./schema";
 import Clip from "../../../@core/components/clip-spinner";
 
@@ -29,25 +25,14 @@ interface Props {
 const CancelReserveFile = ({ fileId, groupId, open, handleDialog }: Props) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectUnBookFileStatus);
-  const error = useAppSelector(selectUnBookFileError);
-  const data = useAppSelector(selectUnBookFileData);
-
-  useEffect(() => {
-    if (status === ResponseStatus.SUCCEEDED) {
-      handleDialog();
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      toast.error(error);
-    }
-  }, [status, error, data, handleDialog]);
 
   const handleUnBook = () => {
-    console.log("group", groupId);
     const req: IUnBookFileRequest = {
       group_id: groupId,
       file_id: fileId,
     };
     dispatch(unBookFile(req)).then(() => {
+      handleDialog();
       dispatch(getGroupFiles({ id: groupId }));
       dispatch(getUnBookedFiles({ id: groupId }));
     });

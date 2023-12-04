@@ -35,9 +35,13 @@ const FileCards = () => {
     <Grid container spacing={4}>
       {status === ResponseStatus.SUCCEEDED &&
       data?.data &&
-      data?.data.length > 0
-        ? data?.data.map((file) => <FileItem file={file} key={file.id} />)
-        : content}
+      data?.data.length > 0 ? (
+        data?.data.map((file) => <FileItem file={file} key={file.id} />)
+      ) : (
+        <Grid item xs={12} className="flex items-center justify-center w-full">
+          {content}
+        </Grid>
+      )}
     </Grid>
   );
 };

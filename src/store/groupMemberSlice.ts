@@ -4,6 +4,7 @@ import GroupService from "../services/groups";
 import { ApiState, ResponseStatus } from "./types";
 import { RootState } from ".";
 import { IAddMemberRequest } from "../pages/groups/addMember/schema";
+import { toast } from "react-toastify";
 
 export interface GroupMember {
   member_id: number;
@@ -112,10 +113,12 @@ export const groupMemberSlice = createSlice({
       })
       .addCase(addMember.fulfilled, (state, action: PayloadAction<any>) => {
         state.addMember.status = ResponseStatus.SUCCEEDED;
+        toast.success(action.payload.message);
         state.addMember.data = action.payload;
       })
       .addCase(addMember.rejected, (state, action) => {
         state.addMember.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.addMember.error =
           action.error.message || "something went wrong..";
       })
@@ -124,11 +127,13 @@ export const groupMemberSlice = createSlice({
       })
       .addCase(deleteMember.fulfilled, (state, action: PayloadAction<any>) => {
         state.deleteMember.status = ResponseStatus.SUCCEEDED;
+        toast.success(action.payload.message);
         state.deleteMember.data = action.payload;
       })
       .addCase(deleteMember.rejected, (state, action) => {
         console.log("slice", ResponseStatus.FAILED);
         state.deleteMember.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.deleteMember.error =
           action.error.message || "something went wrong..";
       });

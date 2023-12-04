@@ -13,7 +13,6 @@ import {
   bookFile,
   getGroupFiles,
   getUnBookedFiles,
-  selectBookFileError,
   selectBookFileStatus,
   selectFilesToBookData,
   selectFilesToBookError,
@@ -22,7 +21,6 @@ import {
 import NoData from "../../../@core/components/no-data";
 import { ResponseStatus } from "../../../store/types";
 import Clip from "../../../@core/components/clip-spinner";
-import { toast } from "react-toastify";
 
 interface Props {
   open: boolean;
@@ -38,7 +36,6 @@ const ReserveFile = ({ open, handleDialog, groupId }: Props) => {
   const filesError = useAppSelector(selectFilesToBookError);
   const filesData = useAppSelector(selectFilesToBookData);
   const bookFilesStatus = useAppSelector(selectBookFileStatus);
-  const bookFilesError = useAppSelector(selectBookFileError);
 
   let files = <NoData />;
   if (filesStatus === ResponseStatus.LOADING) {
@@ -48,15 +45,6 @@ const ReserveFile = ({ open, handleDialog, groupId }: Props) => {
   } else if (filesStatus === ResponseStatus.FAILED) {
     files = <div>{filesError}</div>;
   }
-
-  useEffect(() => {
-    if (bookFilesStatus === ResponseStatus.SUCCEEDED) {
-      handleDialog();
-      toast.success("Files booked successfully");
-    } else if (bookFilesStatus === ResponseStatus.FAILED) {
-      toast.error(bookFilesError?.message);
-    }
-  }, [bookFilesStatus, bookFilesError, handleDialog]);
 
   useEffect(() => {
     dispatch(getUnBookedFiles({ id: groupId }));
@@ -88,9 +76,10 @@ const ReserveFile = ({ open, handleDialog, groupId }: Props) => {
       group_id: groupId,
       file_ids: selected,
     };
-    dispatch(bookFile(requset)).then(() =>
-      dispatch(getGroupFiles({ id: groupId }))
-    );
+    dispatch(bookFile(requset)).then(() => {
+      handleDialog();
+      dispatch(getGroupFiles({ id: groupId }));
+    });
   };
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>

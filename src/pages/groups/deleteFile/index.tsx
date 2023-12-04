@@ -8,14 +8,10 @@ import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import {
   deleteFileFromGroup,
   getGroupFiles,
-  selectDeleteFileData,
-  selectDeleteFileError,
   selectDeleteFileStatus,
 } from "../../../store/groupFileSlice";
 import { useAppSelector } from "../../../hooks/useAppSelector";
 import { ResponseStatus } from "../../../store/types";
-import { toast } from "react-toastify";
-import { useEffect } from "react";
 import Clip from "../../../@core/components/clip-spinner";
 
 interface Props {
@@ -25,25 +21,14 @@ interface Props {
   handleDialog: () => void;
 }
 const DeleteFile = ({ open, handleDialog, groupId, fileId }: Props) => {
-  console.log("group", groupId, fileId);
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectDeleteFileStatus);
-  const error = useAppSelector(selectDeleteFileError);
-  const data = useAppSelector(selectDeleteFileData);
-
-  useEffect(() => {
-    if (status === ResponseStatus.SUCCEEDED) {
-      handleDialog();
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      toast.error(error);
-    }
-  }, [status, error, data, handleDialog]);
 
   const handleDelete = () => {
-    dispatch(deleteFileFromGroup({ groupId: groupId!, fileId })).then(() =>
-      dispatch(getGroupFiles({ id: groupId }))
-    );
+    dispatch(deleteFileFromGroup({ groupId: groupId!, fileId })).then(() => {
+      handleDialog();
+      dispatch(getGroupFiles({ id: groupId }));
+    });
   };
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>

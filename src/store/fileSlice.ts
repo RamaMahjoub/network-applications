@@ -4,6 +4,7 @@ import FileService from "../services/files";
 import { ApiState, ResponseStatus } from "./types";
 import { RootState } from ".";
 import { AxiosProgressEvent } from "axios";
+import { toast } from "react-toastify";
 
 export interface IFileResponse {
   id: number;
@@ -163,11 +164,12 @@ export const fileSlice = createSlice({
       })
       .addCase(deleteFile.fulfilled, (state, action: PayloadAction<any>) => {
         state.deleteFile.status = ResponseStatus.SUCCEEDED;
+        toast.success(action.payload.message);
         state.deleteFile.data = action.payload;
       })
       .addCase(deleteFile.rejected, (state, action) => {
         state.deleteFile.status = ResponseStatus.FAILED;
-        console.log(action.error.message)
+        toast.error(action.error.message);
         state.deleteFile.error =
           action.error.message || "something went wrong..";
       });

@@ -9,13 +9,9 @@ import { useAppSelector } from "../../../hooks/useAppSelector";
 import {
   deleteMember,
   getGroupMembers,
-  selectDeleteMemberData,
-  selectDeleteMemberError,
   selectDeleteMemberStatus,
 } from "../../../store/groupMemberSlice";
-import { useEffect } from "react";
 import { ResponseStatus } from "../../../store/types";
-import { toast } from "react-toastify";
 import Clip from "../../../@core/components/clip-spinner";
 
 interface Props {
@@ -27,23 +23,12 @@ interface Props {
 const DeleteMember = ({ open, handleDialog, memberId, groupId }: Props) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectDeleteMemberStatus);
-  const error = useAppSelector(selectDeleteMemberError);
-  const data = useAppSelector(selectDeleteMemberData);
-  console.log(status)
-  useEffect(() => {
-    if (status === ResponseStatus.SUCCEEDED) {
-      handleDialog();
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      
-      toast.error(error);
-    }
-  }, [status, error, data, handleDialog]);
 
   const handleDelete = () => {
-    dispatch(deleteMember({ groupId, memberId })).then(() =>
-      dispatch(getGroupMembers({ id: groupId }))
-    );
+    dispatch(deleteMember({ groupId, memberId })).then(() => {
+      handleDialog();
+      dispatch(getGroupMembers({ id: groupId }));
+    });
   };
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>

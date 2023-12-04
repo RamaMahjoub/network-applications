@@ -18,14 +18,11 @@ import { routes } from "../../../router/constants";
 import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import {
   register,
-  selectRegisterData,
-  selectRegisterError,
   selectRegisterStatus,
 } from "../../../store/authSlice";
 import { useAppSelector } from "../../../hooks/useAppSelector";
 import { useNavigate } from "react-router-dom";
 import { ResponseStatus } from "../../../store/types";
-import { toast } from "react-toastify";
 import { useEffect } from "react";
 import Clip from "../../../@core/components/clip-spinner";
 
@@ -42,8 +39,6 @@ const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectRegisterStatus);
-  const error = useAppSelector(selectRegisterError);
-  const data = useAppSelector(selectRegisterData);
 
   const initialValues: IRegisterRequest = {
     name: "",
@@ -67,11 +62,8 @@ const Register = () => {
   useEffect(() => {
     if (status === ResponseStatus.SUCCEEDED) {
       navigate(`/${routes.FILES}`);
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      toast.error(error);
     }
-  }, [status, navigate, error, data]);
+  }, [status, navigate]);
 
   return (
     <Box className="content-center">

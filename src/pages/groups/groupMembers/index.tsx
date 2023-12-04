@@ -17,6 +17,7 @@ import {
 import Clip from "../../../@core/components/clip-spinner";
 import MemberItem from "./MemberItem";
 import AddMember from "../addMember";
+import { ListItem } from "@mui/material";
 
 interface Props {
   groupId: number;
@@ -81,15 +82,19 @@ const GroupMembers = ({ groupId }: Props) => {
         </Button>
       </Box>
       <List className="w-full divide-y">
-        {membersStatus === ResponseStatus.SUCCEEDED
-          ? membersData?.group_members.map((member) => (
-              <MemberItem
-                member={member}
-                groupId={groupId}
-                key={member.member_id}
-              />
-            ))
-          : members}
+        {membersStatus === ResponseStatus.SUCCEEDED ? (
+          membersData?.group_members.map((member) => (
+            <MemberItem
+              member={member}
+              groupId={groupId}
+              key={member.member_id}
+            />
+          ))
+        ) : (
+          <ListItem className="flex items-center justify-center w-full">
+            {members}
+          </ListItem>
+        )}
       </List>
       <AddMember
         groupId={Number(groupId!)}

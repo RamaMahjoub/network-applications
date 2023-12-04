@@ -36,12 +36,20 @@ const GroupCards = () => {
     <Grid container spacing={4}>
       {status === ResponseStatus.SUCCEEDED &&
       data?.groups &&
-      data?.groups.length > 0
-        ? data?.groups.map((group) => {
-            console.log(group);
-            return <GroupItem card={group} key={group.group_id} />;
-          })
-        : content}
+      data?.groups.length > 0 ? (
+        data?.groups.map((group) => {
+          console.log(group);
+          return <GroupItem card={group} key={group.group_id} />;
+        })
+      ) : (
+        <Grid
+          item
+          xs={12}
+          className="flex items-center justify-center w-full"
+        >
+          {content}
+        </Grid>
+      )}
     </Grid>
   );
 };

@@ -14,14 +14,10 @@ import { useAppSelector } from "../../../hooks/useAppSelector";
 import {
   addGroup,
   getUserGroups,
-  selectAddGroupData,
-  selectAddGroupError,
   selectAddGroupStatus,
 } from "../../../store/groupSlice";
 import Clip from "../../../@core/components/clip-spinner";
 import { ResponseStatus } from "../../../store/types";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
 
 interface Props {
   open: boolean;
@@ -30,8 +26,6 @@ interface Props {
 const AddGroup = ({ open, handleOpen }: Props) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectAddGroupStatus);
-  const error = useAppSelector(selectAddGroupError);
-  const data = useAppSelector(selectAddGroupData);
 
   const initialValues: IAddGroupRequest = {
     name: "",
@@ -39,19 +33,13 @@ const AddGroup = ({ open, handleOpen }: Props) => {
   const formik = useForm(
     initialValues,
     (values: IAddGroupRequest) => {
-      dispatch(addGroup(values)).then(() => dispatch(getUserGroups()));
+      dispatch(addGroup(values)).then(() => {
+        handleOpen();
+        dispatch(getUserGroups());
+      });
     },
     addGroupValidation
   );
-
-  useEffect(() => {
-    if (status === ResponseStatus.SUCCEEDED) {
-      handleOpen();
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      toast.error(error);
-    }
-  }, [status, error, data, handleOpen]);
 
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleOpen}>

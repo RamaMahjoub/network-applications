@@ -9,12 +9,8 @@ import { useAppSelector } from "../../../hooks/useAppSelector";
 import {
   deleteFile,
   getUserFiles,
-  selectDeleteFileData,
-  selectDeleteFileError,
   selectDeleteFileStatus,
 } from "../../../store/fileSlice";
-import { toast } from "react-toastify";
-import { useEffect } from "react";
 import { ResponseStatus } from "../../../store/types";
 import Clip from "../../../@core/components/clip-spinner";
 
@@ -26,20 +22,12 @@ interface Props {
 const DeleteFile = ({ open, handleDialog, fileId }: Props) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectDeleteFileStatus);
-  const error = useAppSelector(selectDeleteFileError);
-  const data = useAppSelector(selectDeleteFileData);
   const handleDelete = () => {
-    dispatch(deleteFile({ fileId })).then(() => dispatch(getUserFiles()));
-  };
-
-  useEffect(() => {
-    if (status === ResponseStatus.SUCCEEDED) {
+    dispatch(deleteFile({ fileId })).then(() => {
       handleDialog();
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      toast.error(error);
-    }
-  }, [status, error, data, handleDialog]);
+      dispatch(getUserFiles());
+    });
+  };
 
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>

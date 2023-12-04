@@ -19,6 +19,7 @@ import Clip from "../../../@core/components/clip-spinner";
 
 const ViewFileContent = () => {
   const { groupId, fileId } = useParams();
+  console.log(groupId, fileId, "ffffffffffffffff")
   const dispatch = useAppDispatch();
   const filesStatus = useAppSelector(selectFileContentStatus);
   const filesError = useAppSelector(selectFileContentError);
@@ -36,6 +37,7 @@ const ViewFileContent = () => {
   } else if (filesStatus === ResponseStatus.FAILED) {
     content = <div>{filesError}</div>;
   } else formatted = filesData!.file_content.replace(/\\r\\n/g, "\n");
+  
   return (
     <Grid container spacing={4}>
       <Box
@@ -59,7 +61,7 @@ const ViewFileContent = () => {
       </Box>
       <Grid item xs={12}>
         <Box
-          className="flex flex-wrap w-full p-8 mb-8 border rounded-xl"
+          className="flex flex-wrap justify-center w-full p-8 mb-8 border rounded-xl"
           sx={{
             backgroundColor: "rgba(0, 0, 0, .05)",
           }}

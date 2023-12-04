@@ -8,6 +8,7 @@ import { IUnBookFileRequest } from "../pages/groups/cancelReserveFile/schema";
 import { IUpdateFile } from "../pages/groups/groupFiles/schema";
 import { AxiosProgressEvent } from "axios";
 import { setUploadProgress } from "./fileSlice";
+import { toast } from "react-toastify";
 
 export interface GroupFile {
   id: number;
@@ -256,11 +257,13 @@ export const groupFileSlice = createSlice({
         addFileToGroup.fulfilled,
         (state, action: PayloadAction<any>) => {
           state.addFile.status = ResponseStatus.SUCCEEDED;
+          toast.success(action.payload.message);
           state.addFile.data = action.payload;
         }
       )
       .addCase(addFileToGroup.rejected, (state, action) => {
         state.addFile.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.addFile.error = action.error.message || "something went wrong..";
       })
       .addCase(deleteFileFromGroup.pending, (state) => {
@@ -270,11 +273,13 @@ export const groupFileSlice = createSlice({
         deleteFileFromGroup.fulfilled,
         (state, action: PayloadAction<any>) => {
           state.deleteFile.status = ResponseStatus.SUCCEEDED;
+          toast.success(action.payload.message);
           state.deleteFile.data = action.payload;
         }
       )
       .addCase(deleteFileFromGroup.rejected, (state, action) => {
         state.deleteFile.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.deleteFile.error =
           action.error.message || "something went wrong..";
       })
@@ -283,10 +288,12 @@ export const groupFileSlice = createSlice({
       })
       .addCase(unBookFile.fulfilled, (state, action: PayloadAction<any>) => {
         state.unBookFile.status = ResponseStatus.SUCCEEDED;
+        toast.success(action.payload.message);
         state.unBookFile.data = action.payload;
       })
       .addCase(unBookFile.rejected, (state, action) => {
         state.unBookFile.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.unBookFile.error =
           action.error.message || "something went wrong..";
       })
@@ -305,10 +312,12 @@ export const groupFileSlice = createSlice({
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        toast.success("Files booked successfully");
         state.bookFile.data = action.payload;
       })
       .addCase(bookFile.rejected, (state, action) => {
         state.bookFile.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.bookFile.error = action.error.message || "something went wrong..";
       })
       .addCase(updateFile.rejected, (state, action) => {

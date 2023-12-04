@@ -20,12 +20,9 @@ import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import { useAppSelector } from "../../../hooks/useAppSelector";
 import {
   login,
-  selectLoginData,
-  selectLoginError,
   selectLoginStatus,
 } from "../../../store/authSlice";
 import { ResponseStatus } from "../../../store/types";
-import { toast } from "react-toastify";
 import { useEffect } from "react";
 import Clip from "../../../@core/components/clip-spinner";
 
@@ -40,8 +37,6 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectLoginStatus);
-  const error = useAppSelector(selectLoginError);
-  const data = useAppSelector(selectLoginData);
 
   const initialValues: ILoginRequest = {
     email: "",
@@ -62,11 +57,8 @@ const Login = () => {
   useEffect(() => {
     if (status === ResponseStatus.SUCCEEDED) {
       navigate(`/${routes.FILES}`);
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      toast.error(error);
     }
-  }, [status, navigate, error, data]);
+  }, [status, navigate]);
 
   return (
     <Box className="content-center">

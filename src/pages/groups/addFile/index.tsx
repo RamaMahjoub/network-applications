@@ -13,8 +13,6 @@ import {
   addFileToGroup,
   getFilesToAdd,
   getGroupFiles,
-  selectAddFileData,
-  selectAddFileError,
   selectAddFileStatus,
   selectFilesToAddData,
   selectFilesToAddError,
@@ -23,7 +21,6 @@ import {
 import NoData from "../../../@core/components/no-data";
 import Clip from "../../../@core/components/clip-spinner";
 import { ResponseStatus } from "../../../store/types";
-import { toast } from "react-toastify";
 
 interface Props {
   open: boolean;
@@ -38,9 +35,6 @@ const AddFile = ({ open, handleDialog, groupId }: Props) => {
   const filesError = useAppSelector(selectFilesToAddError);
   const filesData = useAppSelector(selectFilesToAddData);
   const addFilesStatus = useAppSelector(selectAddFileStatus);
-  const addFilesError = useAppSelector(selectAddFileError);
-  const addFilesData = useAppSelector(selectAddFileData);
-
   let files = <NoData />;
   const [selected, setSelected] = useState<number[]>([]);
 
@@ -73,15 +67,6 @@ const AddFile = ({ open, handleDialog, groupId }: Props) => {
   }
 
   useEffect(() => {
-    if (addFilesStatus === ResponseStatus.SUCCEEDED) {
-      handleDialog();
-      toast.success(addFilesData?.message);
-    } else if (addFilesStatus === ResponseStatus.FAILED) {
-      toast.error(addFilesError);
-    }
-  }, [addFilesStatus, addFilesError, addFilesData, handleDialog]);
-
-  useEffect(() => {
     dispatch(getFilesToAdd({ id: groupId }));
   }, [dispatch, groupId]);
 
@@ -90,9 +75,10 @@ const AddFile = ({ open, handleDialog, groupId }: Props) => {
       group_id: groupId,
       file_ids: selected,
     };
-    dispatch(addFileToGroup(requset)).then(() =>
-      dispatch(getGroupFiles({ id: groupId }))
-    );
+    dispatch(addFileToGroup(requset)).then(() => {
+      handleDialog();
+      dispatch(getGroupFiles({ id: groupId }));
+    });
   };
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>

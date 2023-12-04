@@ -12,14 +12,10 @@ import { useAppDispatch } from "../../../hooks/useAppDispatch";
 import {
   addMember,
   getGroupMembers,
-  selectAddMemberData,
-  selectAddMemberError,
   selectAddMemberStatus,
 } from "../../../store/groupMemberSlice";
 import { useAppSelector } from "../../../hooks/useAppSelector";
-import { toast } from "react-toastify";
 import { ResponseStatus } from "../../../store/types";
-import { useEffect } from "react";
 import Clip from "../../../@core/components/clip-spinner";
 
 interface Props {
@@ -30,8 +26,6 @@ interface Props {
 const AddMember = ({ open, handleDialog, groupId }: Props) => {
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectAddMemberStatus);
-  const error = useAppSelector(selectAddMemberError);
-  const data = useAppSelector(selectAddMemberData);
   const initialValues: IAddMemberRequest = {
     group_id: groupId,
     user: "",
@@ -39,21 +33,15 @@ const AddMember = ({ open, handleDialog, groupId }: Props) => {
   const formik = useForm(
     initialValues,
     (values: IAddMemberRequest) => {
-      dispatch(addMember(values)).then(() =>
-        dispatch(getGroupMembers({ id: groupId }))
-      );
+      dispatch(addMember(values))
+        .then(() => {
+          handleDialog();
+          dispatch(getGroupMembers({ id: groupId }));
+        })
+        .finally(() => formik.resetForm());
     },
     addMemberValidation
   );
-  useEffect(() => {
-    if (status === ResponseStatus.SUCCEEDED) {
-      handleDialog();
-      toast.success(data?.message);
-    } else if (status === ResponseStatus.FAILED) {
-      formik.resetForm();
-      toast.error(error);
-    }
-  }, [status, error, data, handleDialog]);
 
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>

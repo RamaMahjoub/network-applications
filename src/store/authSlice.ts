@@ -8,6 +8,7 @@ import { ILoginRequest } from "../pages/auth/Login/schema";
 import { ApiState, ResponseStatus } from "./types";
 import { RootState } from ".";
 import { setUserData, setUserToken } from "./../@core/utils/user-storage";
+import { toast } from "react-toastify";
 
 export interface User {
   name: string;
@@ -89,10 +90,12 @@ export const authSlice = createSlice({
         state.register.status = ResponseStatus.SUCCEEDED;
         const token = { token: action.payload.Token };
         setUserToken(token);
+        toast.success(action.payload.message);
         state.register.data = action.payload;
       })
       .addCase(register.rejected, (state, action) => {
         state.register.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.register.error =
           action.error.message || "something went wrong..";
       })
@@ -103,10 +106,12 @@ export const authSlice = createSlice({
         state.login.status = ResponseStatus.SUCCEEDED;
         const token = { token: action.payload.Token };
         setUserToken(token);
+        toast.success(action.payload.message);
         state.login.data = action.payload;
       })
       .addCase(login.rejected, (state, action) => {
         state.login.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.login.error =
           action.error.message || "something went wrong..";
       });

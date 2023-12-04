@@ -4,6 +4,7 @@ import GroupService from "../services/groups";
 import { ApiState, ResponseStatus } from "./types";
 import { RootState } from ".";
 import { IAddGroupRequest } from "../pages/groups/addGroup/schema";
+import { toast } from "react-toastify";
 
 export interface IGroupResponse {
   group_id: number;
@@ -100,10 +101,12 @@ export const groupSlice = createSlice({
       })
       .addCase(addGroup.fulfilled, (state, action: PayloadAction<any>) => {
         state.addGroup.status = ResponseStatus.SUCCEEDED;
+        toast.success(action.payload.message);
         state.addGroup.data = action.payload;
       })
       .addCase(addGroup.rejected, (state, action) => {
         state.addGroup.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.addGroup.error =
           action.error.message || "something went wrong..";
       })
@@ -112,10 +115,12 @@ export const groupSlice = createSlice({
       })
       .addCase(deleteGroup.fulfilled, (state, action: PayloadAction<any>) => {
         state.deleteGroup.status = ResponseStatus.SUCCEEDED;
+        toast.success(action.payload.message);
         state.deleteGroup.data = action.payload;
       })
       .addCase(deleteGroup.rejected, (state, action) => {
         state.deleteGroup.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.deleteGroup.error =
           action.error.message || "something went wrong..";
       });
