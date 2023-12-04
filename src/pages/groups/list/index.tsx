@@ -2,14 +2,14 @@ import { Box, Button, Grid } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import GroupCards from "./GroupCards";
 import Icon from "../../../@core/components/icon";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import AddGroup from "../addGroup";
 
 const GroupsList = () => {
   const [openAddGroup, setOpenAddGroup] = useState<boolean>(false);
-  const handleDialog = () => {
+  const handleDialog = useCallback(() => {
     setOpenAddGroup((pre) => !pre);
-  };
+  }, []);
   return (
     <>
       <Grid container spacing={4}>

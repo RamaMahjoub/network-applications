@@ -6,8 +6,20 @@ import MuiTimeline, { TimelineProps } from "@mui/lab/Timeline";
 import TimelineContent from "@mui/lab/TimelineContent";
 import TimelineSeparator from "@mui/lab/TimelineSeparator";
 import TimelineConnector from "@mui/lab/TimelineConnector";
-import { UserActivities } from "./type";
 import { TimelineDot, TimelineItem } from "@mui/lab";
+import { useParams } from "react-router-dom";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import NoData from "../../../@core/components/no-data";
+import Clip from "../../../@core/components/clip-spinner";
+import { ResponseStatus } from "../../../store/types";
+import {
+  getMemberReport,
+  selectGetMemberReportData,
+  selectGetMemberReportError,
+  selectGetMemberReportStatus,
+} from "../../../store/reportSlice";
+import { useEffect } from "react";
 
 const Timeline = styled(MuiTimeline)<TimelineProps>({
   "& .MuiTimelineItem-root": {
@@ -18,54 +30,31 @@ const Timeline = styled(MuiTimeline)<TimelineProps>({
   },
 });
 
-const activities: UserActivities[] = [
-  {
-    id: 1,
-    name: "Rama Mahjoub",
-    activity: "joined the group in 12/3/2020",
-  },
-  {
-    id: 2,
-    name: "Rama Mahjoub",
-    activity: "Reserve text.txt file in 15/3/2020",
-  },
-  {
-    id: 3,
-    name: "Rama Mahjoub",
-    activity: "Update text.txt file in 15/3/2020",
-  },
-  {
-    id: 4,
-    name: "Rama Mahjoub",
-    activity: "Update text.txt file in 15/3/2020",
-  },
-  {
-    id: 5,
-    name: "Rama Mahjoub",
-    activity: "Cancel Reserve text.txt file in 15/3/2020",
-  },
-  {
-    id: 6,
-    name: "Rama Mahjoub",
-    activity: "Read next.txt file in 16/3/2020",
-  },
-  {
-    id: 7,
-    name: "Rama Mahjoub",
-    activity: "Update text.txt file in 15/3/2020",
-  },
-  {
-    id: 8,
-    name: "Rama Mahjoub",
-    activity: "Cancel Reserve text.txt file in 15/3/2020",
-  },
-  {
-    id: 9,
-    name: "Rama Mahjoub",
-    activity: "Read next.txt file in 16/3/2020",
-  },
-];
 const ReportUser = () => {
+  const { groupId, memberId } = useParams();
+  const dispatch = useAppDispatch();
+  const status = useAppSelector(selectGetMemberReportStatus);
+  const error = useAppSelector(selectGetMemberReportError);
+  const data = useAppSelector(selectGetMemberReportData);
+  let content = <NoData />;
+
+  if (status === ResponseStatus.LOADING) {
+    content = <Clip />;
+  } else if (status === ResponseStatus.IDLE) {
+    content = <NoData />;
+  } else if (status === ResponseStatus.FAILED) {
+    content = <div>{error?.message}</div>;
+  }
+  
+  useEffect(() => {
+    dispatch(
+      getMemberReport({
+        groupId: Number(groupId!),
+        memberId: Number(memberId!),
+      })
+    );
+  }, [dispatch, groupId, memberId]);
+
   return (
     <Grid container spacing={4}>
       <Box
@@ -95,42 +84,47 @@ const ReportUser = () => {
           }}
         >
           <Timeline>
-            {activities.map((activity, index) => (
-              <TimelineItem key={activity.id}>
-                <TimelineSeparator>
-                  {/* <Avatar sx={{ width: 36, height: 36 }}>
-                    <Typography className="text-xs">
-                      {getInitials(activity.name)}
-                    </Typography>
-                  </Avatar> */}
-                  <TimelineDot color="primary" />
-                  {index !== activities.length - 1 && <TimelineConnector />}
-                </TimelineSeparator>
-                <TimelineContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle1"
-                      color="text.secondary"
-                      sx={{ paddingLeft: (theme) => theme.spacing(1) }}
-                    >
-                      {activity.name}
-                    </Typography>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.disabled"
-                      sx={{ paddingLeft: (theme) => theme.spacing(1) }}
-                    >
-                      {activity.activity}
-                    </Typography>
-                  </Box>
-                </TimelineContent>
-              </TimelineItem>
-            ))}
+            {status === ResponseStatus.SUCCEEDED &&
+            data?.data &&
+            data?.data.length > 0
+              ? data?.data.map((activity, index) => {
+                  console.log(activity);
+                  const event = `${activity.event} ${activity.file_name} in ${activity.time}`;
+                  return (
+                    <TimelineItem key={activity.id}>
+                      <TimelineSeparator>
+                        <TimelineDot color="primary" />
+                        {index !== data?.data.length - 1 && (
+                          <TimelineConnector />
+                        )}
+                      </TimelineSeparator>
+                      <TimelineContent>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            color="text.secondary"
+                            sx={{ paddingLeft: (theme) => theme.spacing(1) }}
+                          >
+                            {activity.user_name}
+                          </Typography>
+                          <Typography
+                            variant="subtitle2"
+                            color="text.disabled"
+                            sx={{ paddingLeft: (theme) => theme.spacing(1) }}
+                          >
+                            {event}
+                          </Typography>
+                        </Box>
+                      </TimelineContent>
+                    </TimelineItem>
+                  );
+                })
+              : content}
           </Timeline>
         </Box>
       </Grid>

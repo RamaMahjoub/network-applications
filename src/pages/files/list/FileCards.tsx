@@ -1,49 +1,43 @@
 import Grid from "@mui/material/Grid";
-import { File } from "./type";
 import FileItem from "./FileItem";
-
-const rows: File[] = [
-  {
-    id: 1,
-    name: "nest.txt",
-    created_at: new Date(),
-    status: false,
-    reserved_by: "Rama Mahjoub",
-  },
-  {
-    id: 2,
-    name: "next.txt",
-    created_at: new Date(),
-    status: false,
-    reserved_by: "Ghada Mahjoub",
-  },
-  {
-    id: 3,
-    name: "nest.txt",
-    created_at: new Date(),
-    status: true,
-  },
-  {
-    id: 4,
-    name: "nest.txt",
-    created_at: new Date(),
-    status: false,
-    reserved_by: "Hasan Mahjoub",
-  },
-  {
-    id: 5,
-    name: "nest.txt",
-    created_at: new Date(),
-    status: true,
-  },
-];
+import { ResponseStatus } from "../../../store/types";
+import NoData from "../../../@core/components/no-data";
+import Clip from "../../../@core/components/clip-spinner";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  getUserFiles,
+  selectAllUserFilesData,
+  selectAllUserFilesError,
+  selectAllUserFilesStatus,
+} from "../../../store/fileSlice";
+import { useEffect } from "react";
 
 const FileCards = () => {
+  const dispatch = useAppDispatch();
+  const status = useAppSelector(selectAllUserFilesStatus);
+  const error = useAppSelector(selectAllUserFilesError);
+  const data = useAppSelector(selectAllUserFilesData);
+  let content = <NoData />;
+
+  if (status === ResponseStatus.LOADING) {
+    content = <Clip />;
+  } else if (status === ResponseStatus.IDLE) {
+    content = <NoData />;
+  } else if (status === ResponseStatus.FAILED) {
+    content = <div>{error}</div>;
+  }
+
+  useEffect(() => {
+    dispatch(getUserFiles());
+  }, [dispatch]);
   return (
     <Grid container spacing={4}>
-      {rows.map((file) => (
-        <FileItem file={file} key={file.id} />
-      ))}
+      {status === ResponseStatus.SUCCEEDED &&
+      data?.data &&
+      data?.data.length > 0
+        ? data?.data.map((file) => <FileItem file={file} key={file.id} />)
+        : content}
     </Grid>
   );
 };

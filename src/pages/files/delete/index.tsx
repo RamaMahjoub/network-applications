@@ -4,12 +4,43 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { hexToRGBA } from "../../../@core/utils/hex-to-rgba";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  deleteFile,
+  getUserFiles,
+  selectDeleteFileData,
+  selectDeleteFileError,
+  selectDeleteFileStatus,
+} from "../../../store/fileSlice";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
+import { ResponseStatus } from "../../../store/types";
+import Clip from "../../../@core/components/clip-spinner";
 
 interface Props {
+  fileId: number;
   open: boolean;
   handleDialog: () => void;
 }
-const DeleteFile = ({ open, handleDialog }: Props) => {
+const DeleteFile = ({ open, handleDialog, fileId }: Props) => {
+  const dispatch = useAppDispatch();
+  const status = useAppSelector(selectDeleteFileStatus);
+  const error = useAppSelector(selectDeleteFileError);
+  const data = useAppSelector(selectDeleteFileData);
+  const handleDelete = () => {
+    dispatch(deleteFile({ fileId })).then(() => dispatch(getUserFiles()));
+  };
+
+  useEffect(() => {
+    if (status === ResponseStatus.SUCCEEDED) {
+      handleDialog();
+      toast.success(data?.message);
+    } else if (status === ResponseStatus.FAILED) {
+      toast.error(error);
+    }
+  }, [status, error, data, handleDialog]);
+
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>
       <DialogTitle
@@ -49,8 +80,9 @@ const DeleteFile = ({ open, handleDialog }: Props) => {
                 backgroundColor: (theme) =>
                   hexToRGBA(theme.palette.error.main, 0.8),
               }}
+              onClick={handleDelete}
             >
-              Delete File
+              {status === ResponseStatus.LOADING ? <Clip /> : " Delete File"}
             </Button>
             <Button
               variant="contained"

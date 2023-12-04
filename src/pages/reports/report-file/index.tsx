@@ -1,7 +1,6 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
-import { FileActivities } from "./type";
 import TimelineItem from "@mui/lab/TimelineItem";
 import TimelineContent from "@mui/lab/TimelineContent";
 import TimelineSeparator from "@mui/lab/TimelineSeparator";
@@ -9,44 +8,19 @@ import TimelineDot from "@mui/lab/TimelineDot";
 import TimelineConnector from "@mui/lab/TimelineConnector";
 import MuiTimeline, { TimelineProps } from "@mui/lab/Timeline";
 import { styled } from "@mui/material";
-
-const activities: FileActivities[] = [
-  {
-    id: 1,
-    name: "Rama Mahjoub",
-    activity: "Read text.txt file in 15/3/2020",
-  },
-  {
-    id: 2,
-    name: "Rama Mahjoub",
-    activity: "Reserve text.txt file in 15/3/2020",
-  },
-  {
-    id: 3,
-    name: "Rama Mahjoub",
-    activity: "Update text.txt file in 15/3/2020",
-  },
-  {
-    id: 4,
-    name: "Rama Mahjoub",
-    activity: "Update text.txt file in 15/3/2020",
-  },
-  {
-    id: 5,
-    name: "Rama Mahjoub",
-    activity: "Cancel Reserve text.txt file in 15/3/2020",
-  },
-  {
-    id: 6,
-    name: "Lilas Mahjoub",
-    activity: "Read text.txt file in 16/3/2020",
-  },
-  {
-    id: 9,
-    name: "Ghada Mahjoub",
-    activity: "Read text.txt file in 16/3/2020",
-  },
-];
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  getFileReport,
+  selectGetFileReportData,
+  selectGetFileReportError,
+  selectGetFileReportStatus,
+} from "../../../store/reportSlice";
+import NoData from "../../../@core/components/no-data";
+import { ResponseStatus } from "../../../store/types";
+import Clip from "../../../@core/components/clip-spinner";
+import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 
 const Timeline = styled(MuiTimeline)<TimelineProps>({
   "& .MuiTimelineItem-root": {
@@ -57,6 +31,28 @@ const Timeline = styled(MuiTimeline)<TimelineProps>({
   },
 });
 const ReportFile = () => {
+  const { groupId, fileId } = useParams();
+  console.log("group", groupId, fileId);
+  const dispatch = useAppDispatch();
+  const status = useAppSelector(selectGetFileReportStatus);
+  const error = useAppSelector(selectGetFileReportError);
+  const data = useAppSelector(selectGetFileReportData);
+  let content = <NoData />;
+
+  if (status === ResponseStatus.LOADING) {
+    content = <Clip />;
+  } else if (status === ResponseStatus.IDLE) {
+    content = <NoData />;
+  } else if (status === ResponseStatus.FAILED) {
+    content = <div>{error?.message}</div>;
+  }
+  console.log(data);
+  useEffect(() => {
+    dispatch(
+      getFileReport({ groupId: Number(groupId!), fileId: Number(fileId!) })
+    );
+  }, [dispatch, groupId, fileId]);
+
   return (
     <Grid container spacing={4}>
       <Box
@@ -86,37 +82,47 @@ const ReportFile = () => {
           }}
         >
           <Timeline>
-            {activities.map((activity, index) => (
-              <TimelineItem key={activity.id}>
-                <TimelineSeparator>
-                  <TimelineDot color="primary" />
-                  {index !== activities.length - 1 && <TimelineConnector />}
-                </TimelineSeparator>
-                <TimelineContent>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Typography
-                      variant="subtitle1"
-                      color="text.secondary"
-                      sx={{ paddingLeft: (theme) => theme.spacing(1) }}
-                    >
-                      {activity.name}
-                    </Typography>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.disabled"
-                      sx={{ paddingLeft: (theme) => theme.spacing(1) }}
-                    >
-                      {activity.activity}
-                    </Typography>
-                  </Box>
-                </TimelineContent>
-              </TimelineItem>
-            ))}
+            {status === ResponseStatus.SUCCEEDED &&
+            data?.data &&
+            data?.data.length > 0
+              ? data?.data.map((activity, index) => {
+                  console.log(activity);
+                  const event = `${activity.event} ${activity.file_name} in ${activity.time}`;
+                  return (
+                    <TimelineItem key={activity.id}>
+                      <TimelineSeparator>
+                        <TimelineDot color="primary" />
+                        {index !== data?.data.length - 1 && (
+                          <TimelineConnector />
+                        )}
+                      </TimelineSeparator>
+                      <TimelineContent>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle1"
+                            color="text.secondary"
+                            sx={{ paddingLeft: (theme) => theme.spacing(1) }}
+                          >
+                            {activity.user_name}
+                          </Typography>
+                          <Typography
+                            variant="subtitle2"
+                            color="text.disabled"
+                            sx={{ paddingLeft: (theme) => theme.spacing(1) }}
+                          >
+                            {event}
+                          </Typography>
+                        </Box>
+                      </TimelineContent>
+                    </TimelineItem>
+                  );
+                })
+              : content}
           </Timeline>
         </Box>
       </Grid>

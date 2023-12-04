@@ -1,14 +1,25 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import Modal from "@mui/material/Modal";
 import Typography from "@mui/material/Typography";
+import { Dispatch, useEffect } from "react";
+import { toast } from "react-toastify";
 
 interface Props {
   open: boolean;
   progressVal: number;
+  handleOpen: Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ProgressModal = ({ open, progressVal }: Props) => {
+const ProgressModal = ({ open, progressVal, handleOpen }: Props) => {
+  useEffect(() => {
+    if (progressVal === 100) {
+      handleOpen(false);
+      toast.success("file uploaded successfully");
+    }
+  }, [progressVal]);
+
   return (
     <Modal open={open} disableEscapeKeyDown>
       <Box

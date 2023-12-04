@@ -11,12 +11,12 @@ import Box from "@mui/material/Box";
 import { SyntheticEvent, useState } from "react";
 import Grid from "@mui/material/Grid";
 import DeleteFile from "../delete";
-import { File } from "./type";
 import Chip from "@mui/material/Chip";
 import { hexToRGBA } from "../../../@core/utils/hex-to-rgba";
+import { IFileResponse } from "../../../store/fileSlice";
 
 interface Props {
-  file: File;
+  file: IFileResponse;
 }
 const FileItem = ({ file }: Props) => {
   const theme = useTheme();
@@ -70,9 +70,9 @@ const FileItem = ({ file }: Props) => {
             color={`${theme.palette.text.secondary}`}
           />
           <Typography className="font-medium truncate text-12">
-            {file.name}
+            {file.file_name}
           </Typography>
-          {file.status === true ? (
+          {file.status === 1 ? (
             <Chip
               label="free"
               sx={{
@@ -86,7 +86,7 @@ const FileItem = ({ file }: Props) => {
             />
           ) : (
             <Chip
-              label={`${file.reserved_by}`}
+              label={`${file.booker_name}`}
               avatar={
                 <Icon
                   color={`${theme.palette.error.main}`}
@@ -130,7 +130,7 @@ const FileItem = ({ file }: Props) => {
           </Box>
         </MenuItem>
       </Menu>
-      <DeleteFile open={openDeleteDialog} handleDialog={handleDeleteDialog} />
+      <DeleteFile fileId={file.id} open={openDeleteDialog} handleDialog={handleDeleteDialog} />
     </Grid>
   );
 };

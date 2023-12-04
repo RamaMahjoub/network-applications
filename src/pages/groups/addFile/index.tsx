@@ -5,45 +5,43 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import Typography from "@mui/material/Typography";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import IconifyIcon from "../../../@core/components/icon";
-import { File } from "../../files/list/type";
-
-const rows: File[] = [
-  {
-    id: 1,
-    name: "nest.txt",
-    created_at: new Date(),
-  },
-  {
-    id: 2,
-    name: "next.txt",
-    created_at: new Date(),
-  },
-  {
-    id: 3,
-    name: "nest.txt",
-    created_at: new Date(),
-  },
-  {
-    id: 4,
-    name: "nest.txt",
-    created_at: new Date(),
-  },
-  {
-    id: 5,
-    name: "nest.txt",
-    created_at: new Date(),
-  },
-];
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  addFileToGroup,
+  getFilesToAdd,
+  getGroupFiles,
+  selectAddFileData,
+  selectAddFileError,
+  selectAddFileStatus,
+  selectFilesToAddData,
+  selectFilesToAddError,
+  selectFilesToAddStatus,
+} from "../../../store/groupFileSlice";
+import NoData from "../../../@core/components/no-data";
+import Clip from "../../../@core/components/clip-spinner";
+import { ResponseStatus } from "../../../store/types";
+import { toast } from "react-toastify";
 
 interface Props {
   open: boolean;
   handleDialog: () => void;
+  groupId: number;
 }
 
-const AddFile = ({ open, handleDialog }: Props) => {
+const AddFile = ({ open, handleDialog, groupId }: Props) => {
   const theme = useTheme();
+  const dispatch = useAppDispatch();
+  const filesStatus = useAppSelector(selectFilesToAddStatus);
+  const filesError = useAppSelector(selectFilesToAddError);
+  const filesData = useAppSelector(selectFilesToAddData);
+  const addFilesStatus = useAppSelector(selectAddFileStatus);
+  const addFilesError = useAppSelector(selectAddFileError);
+  const addFilesData = useAppSelector(selectAddFileData);
+
+  let files = <NoData />;
   const [selected, setSelected] = useState<number[]>([]);
 
   const handleSelect = (id: number) => {
@@ -66,6 +64,36 @@ const AddFile = ({ open, handleDialog }: Props) => {
     setSelected(newSelected);
   };
 
+  if (filesStatus === ResponseStatus.LOADING) {
+    files = <Clip />;
+  } else if (filesStatus === ResponseStatus.IDLE) {
+    files = <NoData />;
+  } else if (filesStatus === ResponseStatus.FAILED) {
+    files = <div>{filesError?.message}</div>;
+  }
+
+  useEffect(() => {
+    if (addFilesStatus === ResponseStatus.SUCCEEDED) {
+      handleDialog();
+      toast.success(addFilesData?.message);
+    } else if (addFilesStatus === ResponseStatus.FAILED) {
+      toast.error(addFilesError);
+    }
+  }, [addFilesStatus, addFilesError, addFilesData, handleDialog]);
+
+  useEffect(() => {
+    dispatch(getFilesToAdd({ id: groupId }));
+  }, [dispatch, groupId]);
+
+  const handleAddFiles = () => {
+    const requset = {
+      group_id: groupId,
+      file_ids: selected,
+    };
+    dispatch(addFileToGroup(requset)).then(() =>
+      dispatch(getGroupFiles({ id: groupId }))
+    );
+  };
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>
       <DialogTitle
@@ -95,48 +123,50 @@ const AddFile = ({ open, handleDialog }: Props) => {
           }}
         >
           <Typography>All Files</Typography>
-          {rows.map((file) => (
-            <Box
-              key={file.id}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-              borderBottom={1}
-              borderColor="divider"
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <IconifyIcon
-                  width={36}
-                  height={36}
-                  icon="heroicons-outline:document"
-                  color={`${theme.palette.text.secondary}`}
-                />
+          {filesStatus === ResponseStatus.SUCCEEDED
+            ? filesData?.data.map((file) => (
                 <Box
+                  key={file.id}
                   sx={{
                     display: "flex",
-                    alignItems: "flex-start",
-                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "space-between",
                   }}
+                  borderBottom={1}
+                  borderColor="divider"
                 >
-                  <Typography
-                    noWrap
-                    sx={{
-                      fontWeight: 500,
-                      textDecoration: "none",
-                    }}
-                  >
-                    {file.name}
-                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <IconifyIcon
+                      width={36}
+                      height={36}
+                      icon="heroicons-outline:document"
+                      color={`${theme.palette.text.secondary}`}
+                    />
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        flexDirection: "column",
+                      }}
+                    >
+                      <Typography
+                        noWrap
+                        sx={{
+                          fontWeight: 500,
+                          textDecoration: "none",
+                        }}
+                      >
+                        {file.name}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Checkbox
+                    checked={selected.includes(file.id)}
+                    onChange={() => handleSelect(file.id)}
+                  />
                 </Box>
-              </Box>
-              <Checkbox
-                checked={selected.includes(file.id)}
-                onChange={() => handleSelect(file.id)}
-              />
-            </Box>
-          ))}
+              ))
+            : files}
         </Box>
       </DialogContent>
       <DialogActions
@@ -158,8 +188,9 @@ const AddFile = ({ open, handleDialog }: Props) => {
           sx={{
             textTransform: "none",
           }}
+          onClick={handleAddFiles}
         >
-          Add Files
+          {addFilesStatus === ResponseStatus.LOADING ? <Clip /> : "Add Files"}
         </Button>
         <Button
           variant="contained"

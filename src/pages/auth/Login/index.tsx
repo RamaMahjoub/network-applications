@@ -15,6 +15,19 @@ import usePasswordToggle from "../hooks/usePasswordToggle";
 import { ILoginRequest } from "./schema";
 import useForm from "../../../hooks/useForm";
 import { loginValidation } from "../validations/loginValidation";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  login,
+  selectLoginData,
+  selectLoginError,
+  selectLoginStatus,
+} from "../../../store/authSlice";
+import { ResponseStatus } from "../../../store/types";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
+import Clip from "../../../@core/components/clip-spinner";
 
 const BoxWrapper = styled(Box)<BoxProps>(() => ({
   width: "100%",
@@ -24,17 +37,37 @@ const BoxWrapper = styled(Box)<BoxProps>(() => ({
 
 const Login = () => {
   const { showPassword, handleShow } = usePasswordToggle();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const status = useAppSelector(selectLoginStatus);
+  const error = useAppSelector(selectLoginError);
+  const data = useAppSelector(selectLoginData);
+
   const initialValues: ILoginRequest = {
     email: "",
     password: "",
   };
+  const handleSubmit = (values: ILoginRequest) => {
+    console.log(values);
+    dispatch(login(values));
+  };
   const formik = useForm(
     initialValues,
     (values: ILoginRequest) => {
-      alert(values);
+      handleSubmit(values);
     },
     loginValidation
   );
+
+  useEffect(() => {
+    if (status === ResponseStatus.SUCCEEDED) {
+      navigate(`/${routes.FILES}`);
+      toast.success(data?.message);
+    } else if (status === ResponseStatus.FAILED) {
+      toast.error(error);
+    }
+  }, [status, navigate, error, data]);
+
   return (
     <Box className="content-center">
       <BoxWrapper>
@@ -47,7 +80,7 @@ const Login = () => {
             <form autoComplete="off" onSubmit={formik.handleSubmit}>
               <TextField
                 fullWidth
-                id="auth-register-email"
+                id="auth-login"
                 type="email"
                 label="Email"
                 sx={{ mb: 4 }}
@@ -99,7 +132,7 @@ const Login = () => {
                 sx={{ mb: 4, textTransform: "none" }}
                 disabled={!formik.dirty || !formik.isValid}
               >
-                Sign in
+                {status === ResponseStatus.LOADING ? <Clip /> : "Sign in"}
               </Button>
               <Box
                 sx={{

@@ -1,6 +1,17 @@
 export interface IRegisterRequest {
-    username: string;
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface IRegisterResponse {
+  user: {
+    id: number;
+    name: string;
     email: string;
-    password: string;
-    confirmPassword: string;
+    username: string;
+  };
+  Token: string;
 }

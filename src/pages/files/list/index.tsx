@@ -1,46 +1,32 @@
-import {
-  Box,
-  Button,
-  Grid,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Grid, Typography } from "@mui/material";
 import Icon from "../../../@core/components/icon";
 import FileCards from "./FileCards";
 import { ChangeEvent, useRef, useState } from "react";
 import ProgressModal from "../../../@core/components/progress-modal";
-
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  getUserFiles,
+  selectUploadProgress,
+  uploadFile,
+} from "../../../store/fileSlice";
 const FilesList = () => {
+  const dispatch = useAppDispatch();
+  const uploadProgress = useAppSelector(selectUploadProgress);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<File | null>(null);
   const [openModal, setOpenModal] = useState<boolean>(false);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFile(e.target.files[0]);
-      handleUploadFile(e.target.files[0]);
+      setOpenModal(true);
+      dispatch(uploadFile(e.target.files[0])).then(() =>
+        dispatch(getUserFiles())
+      );
     }
   };
 
   const handleChooseFile = () => {
     fileInputRef.current?.click();
-  };
-
-  const handleUploadFile = async (file: File) => {
-    if (!file) return;
-
-    setOpenModal(true);
-
-    const delay = (ms: number) =>
-      new Promise((resolve) => setTimeout(resolve, ms));
-
-    for (let progress = 0; progress <= 100; progress += 10) {
-      await delay(500);
-      setUploadProgress(progress);
-    }
-
-    setOpenModal(false);
-    setUploadProgress(0);
   };
 
   return (
@@ -94,7 +80,7 @@ const FilesList = () => {
           </Box>
         </Grid>
       </Grid>
-      <ProgressModal open={openModal} progressVal={uploadProgress} />
+      <ProgressModal open={openModal} progressVal={uploadProgress} handleOpen={setOpenModal} />
     </>
   );
 };

@@ -1,25 +1,41 @@
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
+import { useEffect } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coldarkDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-
-const content: string = `export interface GroupFile {
-  id: number;
-  name: string;
-  created_at: Date;
-  status: boolean;
-  reserved_by: string | null;
-}
-
-export interface Column {
-  id: "id" | "name" | "status" | "created_at" | "reserved_by";
-  label: string;
-  minWidth?: number;
-  align?: "left";
-}`;
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  readFile,
+  selectFileContentData,
+  selectFileContentError,
+  selectFileContentStatus,
+} from "../../../store/fileSlice";
+import { useParams } from "react-router-dom";
+import NoData from "../../../@core/components/no-data";
+import { ResponseStatus } from "../../../store/types";
+import Clip from "../../../@core/components/clip-spinner";
 
 const ViewFileContent = () => {
+  const { groupId, fileId } = useParams();
+  const dispatch = useAppDispatch();
+  const filesStatus = useAppSelector(selectFileContentStatus);
+  const filesError = useAppSelector(selectFileContentError);
+  const filesData = useAppSelector(selectFileContentData);
+  let content = <NoData />;
+  let formatted = "";
+  useEffect(() => {
+    dispatch(readFile({ groupId: Number(groupId!), fileId: Number(fileId!) }));
+  }, [dispatch, groupId, fileId]);
+
+  if (filesStatus === ResponseStatus.LOADING) {
+    content = <Clip />;
+  } else if (filesStatus === ResponseStatus.IDLE) {
+    content = <NoData />;
+  } else if (filesStatus === ResponseStatus.FAILED) {
+    content = <div>{filesError}</div>;
+  } else formatted = filesData!.file_content.replace(/\\r\\n/g, "\n");
   return (
     <Grid container spacing={4}>
       <Box
@@ -38,7 +54,7 @@ const ViewFileContent = () => {
           variant="h6"
           className="flex font-extrabold tracking-tight text-24 md:text-32"
         >
-          File Name
+          {filesData ? filesData!.file_name : ""}
         </Typography>
       </Box>
       <Grid item xs={12}>
@@ -48,10 +64,11 @@ const ViewFileContent = () => {
             backgroundColor: "rgba(0, 0, 0, .05)",
           }}
         >
-          <SyntaxHighlighter
-            style={coldarkDark}
-            children={content}
-          />
+          {filesStatus === ResponseStatus.SUCCEEDED ? (
+            <SyntaxHighlighter style={coldarkDark} children={formatted} />
+          ) : (
+            content
+          )}
         </Box>
       </Grid>
     </Grid>

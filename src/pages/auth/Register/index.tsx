@@ -15,6 +15,19 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import { routes } from "../../../router/constants";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import {
+  register,
+  selectRegisterData,
+  selectRegisterError,
+  selectRegisterStatus,
+} from "../../../store/authSlice";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import { useNavigate } from "react-router-dom";
+import { ResponseStatus } from "../../../store/types";
+import { toast } from "react-toastify";
+import { useEffect } from "react";
+import Clip from "../../../@core/components/clip-spinner";
 
 const BoxWrapper = styled(Box)<BoxProps>(() => ({
   width: "100%",
@@ -26,19 +39,40 @@ const Register = () => {
   const { showPassword, handleShow } = usePasswordToggle();
   const { showPassword: showConfirmPassword, handleShow: handleShowConfirm } =
     usePasswordToggle();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const status = useAppSelector(selectRegisterStatus);
+  const error = useAppSelector(selectRegisterError);
+  const data = useAppSelector(selectRegisterData);
+
   const initialValues: IRegisterRequest = {
+    name: "",
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
   };
+
+  const handleSubmit = (values: IRegisterRequest) => {
+    dispatch(register(values));
+  };
   const formik = useForm(
     initialValues,
     (values: IRegisterRequest) => {
-      alert(values);
+      handleSubmit(values);
     },
     registerValidation
   );
+
+  useEffect(() => {
+    if (status === ResponseStatus.SUCCEEDED) {
+      navigate(`/${routes.FILES}`);
+      toast.success(data?.message);
+    } else if (status === ResponseStatus.FAILED) {
+      toast.error(error);
+    }
+  }, [status, navigate, error, data]);
+
   return (
     <Box className="content-center">
       <BoxWrapper>
@@ -49,6 +83,19 @@ const Register = () => {
           />
           <CardContent>
             <form autoComplete="off" onSubmit={formik.handleSubmit}>
+              <TextField
+                fullWidth
+                type="name"
+                label="Name"
+                sx={{ mb: 4 }}
+                {...formik.getFieldProps("name")}
+                helperText={
+                  formik.touched.name && Boolean(formik.errors.name)
+                    ? String(formik.errors.name)
+                    : ""
+                }
+                error={formik.touched.name && Boolean(formik.errors.name)}
+              />
               <TextField
                 fullWidth
                 type="username"
@@ -156,7 +203,7 @@ const Register = () => {
                 sx={{ mb: 4, textTransform: "none" }}
                 disabled={!formik.dirty || !formik.isValid}
               >
-                Sign up
+                {status === ResponseStatus.LOADING ? <Clip /> : "Sign up"}
               </Button>
               <Box
                 sx={{

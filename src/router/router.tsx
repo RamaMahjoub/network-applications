@@ -5,16 +5,18 @@ import {
 } from "react-router-dom";
 import BlankLayout from "../@core/layouts/BlankLayout";
 import { routes } from "./constants";
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
 import UserLayout from "../@core/layouts/UserLayout";
-import FilesList from "../pages/files/list";
-import GroupsList from "../pages/groups/list";
-import PreviewGroup from "../pages/groups/Preview";
-import ReportFile from "../pages/reports/report-file";
-import ReportUser from "../pages/reports/report-user";
-import ViewFileContent from "../pages/groups/viewFileContent";
-
+import {
+  FilesList,
+  GroupsList,
+  Login,
+  PreviewGroup,
+  Register,
+  ReportFile,
+  ReportUser,
+  ViewFileContent,
+} from ".";
+import AuthGuard from "./AuthGuard";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,18 +27,30 @@ export const router = createBrowserRouter(
       </Route>
 
       <Route element={<UserLayout />}>
-        <Route path={routes.FILES} element={<FilesList />} />
-        <Route path={routes.GROUPS} element={<GroupsList />} />
-        <Route path={`/${routes.GROUPS}/:groupId`} element={<PreviewGroup />} />
         <Route
-          path={`/${routes.FILEREPORT}/:fileId`}
-          element={<ReportFile />}
+          path={routes.FILES}
+          element={<AuthGuard element={<FilesList />} />}
         />
         <Route
-          path={`/${routes.USERREPORT}/:userId`}
-          element={<ReportUser />}
+          path={routes.GROUPS}
+          element={<AuthGuard element={<GroupsList />} />}
         />
-        <Route path={`/${routes.FILE}/:fileId`} element={<ViewFileContent />} />
+        <Route
+          path={`/${routes.GROUPS}/:groupId`}
+          element={<AuthGuard element={<PreviewGroup />} />}
+        />
+        <Route
+          path={`/${routes.GROUPS}/:groupId/${routes.FILEREPORT}/:fileId`}
+          element={<AuthGuard element={<ReportFile />} />}
+        />
+        <Route
+          path={`/${routes.GROUPS}/:groupId/${routes.USERREPORT}/:memberId`}
+          element={<AuthGuard element={<ReportUser />} />}
+        />
+        <Route
+          path={`/${routes.GROUPS}/:groupId/${routes.FILE}/:fileId`}
+          element={<AuthGuard element={<ViewFileContent />} />}
+        />
       </Route>
     </>
   )

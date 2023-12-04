@@ -4,12 +4,47 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { hexToRGBA } from "../../../@core/utils/hex-to-rgba";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
+import { useAppSelector } from "../../../hooks/useAppSelector";
+import {
+  deleteMember,
+  getGroupMembers,
+  selectDeleteMemberData,
+  selectDeleteMemberError,
+  selectDeleteMemberStatus,
+} from "../../../store/groupMemberSlice";
+import { useEffect } from "react";
+import { ResponseStatus } from "../../../store/types";
+import { toast } from "react-toastify";
+import Clip from "../../../@core/components/clip-spinner";
 
 interface Props {
+  groupId: number;
+  memberId: number;
   open: boolean;
   handleDialog: () => void;
 }
-const DeleteMember = ({ open, handleDialog }: Props) => {
+const DeleteMember = ({ open, handleDialog, memberId, groupId }: Props) => {
+  const dispatch = useAppDispatch();
+  const status = useAppSelector(selectDeleteMemberStatus);
+  const error = useAppSelector(selectDeleteMemberError);
+  const data = useAppSelector(selectDeleteMemberData);
+  console.log(status)
+  useEffect(() => {
+    if (status === ResponseStatus.SUCCEEDED) {
+      handleDialog();
+      toast.success(data?.message);
+    } else if (status === ResponseStatus.FAILED) {
+      
+      toast.error(error);
+    }
+  }, [status, error, data, handleDialog]);
+
+  const handleDelete = () => {
+    dispatch(deleteMember({ groupId, memberId })).then(() =>
+      dispatch(getGroupMembers({ id: groupId }))
+    );
+  };
   return (
     <Dialog open={open} maxWidth="sm" fullWidth onClose={handleDialog}>
       <DialogTitle
@@ -49,8 +84,9 @@ const DeleteMember = ({ open, handleDialog }: Props) => {
                 backgroundColor: (theme) =>
                   hexToRGBA(theme.palette.error.main, 0.8),
               }}
+              onClick={handleDelete}
             >
-              Delete Member
+              {status === ResponseStatus.LOADING ? <Clip /> : "Delete Member"}
             </Button>
             <Button
               variant="contained"
