@@ -16,6 +16,7 @@ interface Props {
   card: IGroupResponse;
 }
 const GroupItem = ({ card }: Props) => {
+  console.log("card", card)
   const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const handleDeleteDialog = useCallback(() => {
     setOpenDeleteDialog((pre) => !pre);

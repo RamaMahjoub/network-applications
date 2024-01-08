@@ -67,7 +67,7 @@ const updateFile = (
     },
     onUploadProgress,
   };
-  return protectedAxios.post("/file/upload", body, config);
+  return protectedAxios.post("/file/edit", body, config);
 };
 
 const GroupService = {

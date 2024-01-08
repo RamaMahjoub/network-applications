@@ -20,6 +20,7 @@ interface Props {
   handleDialog: () => void;
 }
 const DeleteGroup = ({ open, handleDialog, groupId }: Props) => {
+  console.warn('groupId', groupId)
   const dispatch = useAppDispatch();
   const status = useAppSelector(selectDeleteGroupStatus);
 

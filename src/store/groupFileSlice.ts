@@ -322,6 +322,7 @@ export const groupFileSlice = createSlice({
       })
       .addCase(updateFile.rejected, (state, action) => {
         state.updateFile.status = ResponseStatus.FAILED;
+        toast.error(action.error.message);
         state.updateFile.error =
           action.error.message || "something went wrong..";
       })
@@ -330,6 +331,7 @@ export const groupFileSlice = createSlice({
       })
       .addCase(updateFile.fulfilled, (state, action: PayloadAction<any>) => {
         state.updateFile.status = ResponseStatus.SUCCEEDED;
+        toast.success(action.payload.message);
         state.updateFile.data = action.payload;
       });
   },

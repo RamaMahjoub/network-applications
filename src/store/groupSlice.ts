@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 export interface IGroupResponse {
   group_id: number;
   name: string;
+  admin_id: number;
   member_count: number;
 }
 interface IAllGroupsResponse {
